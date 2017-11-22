@@ -81,7 +81,7 @@ static int puf_fill_version_from_header(plf_phdr *header,
 	return 0;
 }
 
-#if BUILD_LIBPLFNG
+#ifdef BUILD_LIBPLFNG
 
 struct puf_plf *puf_plf_new(const char *path)
 {
@@ -150,6 +150,13 @@ int puf_plf_get_target_id(struct puf_plf *puf_plf, uint32_t *target_id)
 
 	*target_id = puf_plf->header.p_targ;
 	return 0;
+}
+
+int puf_plf_check(struct puf_plf *puf_plf)
+{
+	if (!puf_plf)
+		return -EINVAL;
+	return plfng_check(puf_plf->plf);
 }
 
 int puf_plf_get_file_size(struct puf_plf *puf_plf, const char *fname)
@@ -262,6 +269,11 @@ int puf_plf_get_target_id(struct puf_plf *puf_plf, uint32_t *target_id)
 
 	*target_id = puf_plf->header.p_targ;
 	return 0;
+}
+
+int puf_plf_check(struct puf_plf *fw_plf)
+{
+	return -ENOSYS;
 }
 
 int puf_plf_get_file_size(struct puf_plf *puf_plf, const char *fname)

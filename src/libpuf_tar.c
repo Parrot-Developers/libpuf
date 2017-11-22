@@ -146,6 +146,44 @@ int puf_tar_get_target_id(struct puf_tar *puf_tar, uint32_t *target_id)
 	return 0;
 }
 
+int puf_tar_check(struct puf_tar *puf_tar)
+{
+	int ret = -ENOENT;
+	TAR *t;
+	const char *msg = NULL;
+
+	if (!puf_tar)
+		return -EINVAL;
+
+	if (tar_open(&t, puf_tar->path, puf_tar->tartype, O_RDONLY, 0, 0) == -1)
+		return -EIO;
+
+	/* We parse the whole archive to check its integrity. */
+	ULOGI("%s", __func__);
+	while ((ret = th_read(t)) == 0) {
+		if (TH_ISREG(t) && tar_skip_regfile(t) != 0) {
+			ret = -EIO;
+			goto out;
+		}
+	}
+
+	/* In case of success, final result is 1 otherwise -1 */
+	if (ret < 0) {
+		ret = -EIO;
+	} else if (puf_tar->tartype == &gztype) {
+		/* Check gzip error, to detect early EOF */
+		msg = gzerror((gzFile)t->fd, &ret);
+		if (ret != Z_OK) {
+			ULOGE("gzerror: %s", msg);
+			ret = -EIO;
+		}
+	}
+
+out:
+	tar_close(t);
+	return ret;
+}
+
 int puf_tar_get_file_size(struct puf_tar *puf_tar, const char *fname)
 {
 	int ret = -ENOENT;

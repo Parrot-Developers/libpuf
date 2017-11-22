@@ -117,6 +117,13 @@ int puf_get_target_id(struct puf *puf, uint32_t *target_id);
 int puf_get_file_size(struct puf *puf, const char *fname);
 
 /**
+ * Check integrity of update file.
+ * @param puf:       puf context
+ * @return           0 if successful, -errno if an error occurred
+ */
+int puf_check(struct puf *puf);
+
+/**
  * Extract a file from the puf context to a buffer
  *
  * @param puf:   puf context

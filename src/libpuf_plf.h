@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#if BUILD_LIBPLFNG
+#ifdef BUILD_LIBPLFNG
 
 #include <libplfng.h>
 
@@ -79,6 +79,7 @@ void puf_plf_destroy(struct puf_plf *fw_plf);
 int puf_plf_get_version(struct puf_plf *fw_plf, struct puf_version *version);
 int puf_plf_get_app_id(struct puf_plf *fw_plf, uint32_t *app_id);
 int puf_plf_get_target_id(struct puf_plf *fw_plf, uint32_t *target_id);
+int puf_plf_check(struct puf_plf *fw_plf);
 int puf_plf_get_file_size(struct puf_plf *puf_plf, const char *fname);
 int puf_plf_extract_to_buf(struct puf_plf *puf_plf, const char *fname,
 			   uint8_t *buf, size_t len);

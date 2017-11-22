@@ -152,6 +152,17 @@ int puf_get_file_size(struct puf *puf, const char *fname)
 }
 
 EXPORT_SYMBOL
+int puf_check(struct puf *puf)
+{
+	if (!puf || (!puf->plf && !puf->tar))
+		return -EINVAL;
+	if (puf->plf)
+		return puf_plf_check(puf->plf);
+	else
+		return puf_tar_check(puf->tar);
+}
+
+EXPORT_SYMBOL
 int puf_extract_to_buf(struct puf *puf, const char *fname,
 		       uint8_t *buf, size_t len)
 {

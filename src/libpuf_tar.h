@@ -42,6 +42,7 @@ void puf_tar_destroy(struct puf_tar *fw_tar);
 int puf_tar_get_version(struct puf_tar *fw_tar, struct puf_version *version);
 int puf_tar_get_app_id(struct puf_tar *fw_tar, uint32_t *app_id);
 int puf_tar_get_target_id(struct puf_tar *fw_tar, uint32_t *target_id);
+int puf_tar_check(struct puf_tar *fw_tar);
 int puf_tar_get_file_size(struct puf_tar *puf_tar, const char *fname);
 int puf_tar_extract_to_buf(struct puf_tar *puf_tar, const char *fname,
 			   uint8_t *buf, size_t len);
