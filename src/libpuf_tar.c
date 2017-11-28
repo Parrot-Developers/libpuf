@@ -159,7 +159,6 @@ int puf_tar_check(struct puf_tar *puf_tar)
 		return -EIO;
 
 	/* We parse the whole archive to check its integrity. */
-	ULOGI("%s", __func__);
 	while ((ret = th_read(t)) == 0) {
 		if (TH_ISREG(t) && tar_skip_regfile(t) != 0) {
 			ret = -EIO;
