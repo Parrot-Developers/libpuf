@@ -37,7 +37,7 @@
 
 static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
 {
-	char *gzoflags;
+	const char *gzoflags;
 	gzFile gzf;
 	int fd;
 
