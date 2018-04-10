@@ -48,5 +48,6 @@ int puf_tar_extract_to_buf(struct puf_tar *puf_tar, const char *fname,
 			   uint8_t *buf, size_t len);
 int puf_tar_extract_to_file(struct puf_tar *puf_tar,
 			    const char *fname, const char *oname);
+int puf_tar_walk(struct puf_tar *puf_tar, const struct puf_walk_cbs *cbs);
 
 #endif /* _LIBPUF_TAR_H */

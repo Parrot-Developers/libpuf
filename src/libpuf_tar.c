@@ -307,3 +307,86 @@ int puf_tar_extract_to_file(struct puf_tar *puf_tar,
 
 	return ret;
 }
+
+/**
+ *
+ * @return 1 if member was completely read.
+ * @return 0 if callback asks to stop.
+ * @return -EIO in case of error during read.
+ */
+static int walk_read_member(TAR *t,
+			    const struct puf_walk_member *member,
+			    const struct puf_walk_cbs *cbs)
+{
+	int ret = 0;
+	uint8_t buf[T_BLOCKSIZE];
+	size_t remaining = member->size, len = 0;
+
+	while (remaining > 0) {
+		len = remaining > T_BLOCKSIZE ? T_BLOCKSIZE : remaining;
+		if (tar_block_read(t, buf) < 0)
+			return -EIO;
+
+		ret = (*cbs->member_data)(member, buf, len, cbs->userdata);
+		if (ret <= 0)
+			return ret;
+		remaining -= len;
+	}
+
+	return 1;
+}
+
+int puf_tar_walk(struct puf_tar *puf_tar, const struct puf_walk_cbs *cbs)
+{
+	int ret = 0;
+	TAR *t;
+	if (!puf_tar || !cbs)
+		return -EINVAL;
+
+	if (tar_open(&t, puf_tar->path, puf_tar->tartype, O_RDONLY, 0, 0) < 0)
+		return -EIO;
+
+	while (th_read(t) == 0) {
+		char *pathname = th_get_pathname(t);
+		/* Strip the leading ./ in pathname if present */
+		if (strlen(pathname) > 2 &&
+				pathname[0] == '.' &&
+				pathname[1] == '/') {
+			pathname = &pathname[2];
+		}
+
+		/* Setup member info */
+		struct puf_walk_member member;
+		memset(&member, 0, sizeof(member));
+		member.name = pathname;
+		member.size = th_get_size(t);
+		member.mode = th_get_mode(t);
+
+		if (cbs->member_begin) {
+			ret = (*cbs->member_begin)(&member, cbs->userdata);
+			if (ret <= 0)
+				break;
+		}
+
+		/* For regular files, Walk data or skip */
+		if (TH_ISREG(t)) {
+			if (cbs->member_data) {
+				ret = walk_read_member(t, &member, cbs);
+				if (ret <= 0)
+					break;
+			} else if (tar_skip_regfile(t) < 0) {
+				ret = -EIO;
+				break;
+			}
+		}
+
+		if (cbs->member_end) {
+			ret = (*cbs->member_end)(&member, cbs->userdata);
+			if (ret <= 0)
+				break;
+		}
+	}
+
+	tar_close(t);
+	return ret;
+}

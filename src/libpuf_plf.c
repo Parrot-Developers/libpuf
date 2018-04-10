@@ -212,6 +212,11 @@ exit:
 	return ret;
 }
 
+int puf_plf_walk(struct puf_plf *puf_plf, const struct puf_walk_cbs *cbs)
+{
+	return -ENOSYS;
+}
+
 #else
 
 struct puf_plf *puf_plf_new(const char *path)
@@ -289,6 +294,11 @@ int puf_plf_extract_to_buf(struct puf_plf *puf_plf, const char *fname,
 
 int puf_plf_extract_to_file(struct puf_plf *puf_plf,
 			    const char *fname, const char *oname)
+{
+	return -ENOSYS;
+}
+
+int puf_plf_walk(struct puf_plf *puf_plf, const struct puf_walk_cbs *cbs)
 {
 	return -ENOSYS;
 }

@@ -85,6 +85,7 @@ int puf_plf_extract_to_buf(struct puf_plf *puf_plf, const char *fname,
 			   uint8_t *buf, size_t len);
 int puf_plf_extract_to_file(struct puf_plf *puf_plf,
 			    const char *fname, const char *oname);
+int puf_plf_walk(struct puf_plf *puf_plf, const struct puf_walk_cbs *cbs);
 int puf_plf_get_version_from_buffer(uint8_t *buffer, size_t len,
 				    struct puf_version *version);
 

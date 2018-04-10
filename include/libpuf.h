@@ -54,6 +54,42 @@ struct puf_version {
 	uint32_t build; /* Always 0 if type is DEV or RELEASE */
 };
 
+struct puf_walk_member {
+	const char *name; /* Name of member */
+	size_t size;    /* Size for regular files */
+	uint32_t mode; /* File type and mode */
+
+};
+
+/** puf_walk callbaks. They are all optional */
+struct puf_walk_cbs {
+	/** User data to pass to callbacks. */
+	void *userdata;
+
+	/**
+	 * Begining of member
+	 * @return 1 to continue, 0 to stop, negative errno for error.
+	 */
+	int (*member_begin)(const struct puf_walk_member *member,
+			void *userdata);
+
+	/**
+	 * Data of member can be called several times.
+	 * @return 1 to continue, 0 to stop, negative errno for error.
+	 */
+	int (*member_data)(const struct puf_walk_member *member,
+			const uint8_t *buf,
+			size_t len,
+			void *userdata);
+
+	/**
+	 * End of member.
+	 * @return 1 to continue, 0 to stop, negative errno for error.
+	 */
+	int (*member_end)(const struct puf_walk_member *member,
+			void *userdata);
+};
+
 /**
  * Puf context, an opaque structure.
  */
@@ -144,6 +180,15 @@ int puf_extract_to_buf(struct puf *puf, const char *fname,
  * @return       0 if successful, -errno if an error occurred
  */
 int puf_extract_to_file(struct puf *puf, const char *fname, const char *oname);
+
+/**
+ * Walk the file and call functions for each member.
+ *
+ * @param puf:   puf context
+ * @param cbs:   structure with functions to be called for each member.
+ * @return       0 if successful, -errno if an error occurred
+ */
+int puf_walk(struct puf *puf, const struct puf_walk_cbs *cbs);
 
 /**
  * Compare two puf_versions

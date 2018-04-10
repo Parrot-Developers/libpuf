@@ -188,6 +188,17 @@ int puf_extract_to_file(struct puf *puf, const char *fname, const char *oname)
 }
 
 EXPORT_SYMBOL
+int puf_walk(struct puf *puf, const struct puf_walk_cbs *cbs)
+{
+	if (!puf || !cbs)
+		return -EINVAL;
+	if (puf->plf)
+		return puf_plf_walk(puf->plf, cbs);
+	else
+		return puf_tar_walk(puf->tar, cbs);
+}
+
+EXPORT_SYMBOL
 int puf_compare_version(const struct puf_version *v1,
 			const struct puf_version *v2)
 {
