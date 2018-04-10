@@ -176,7 +176,11 @@ int puf_tar_check(struct puf_tar *puf_tar)
 		if (ret != Z_OK) {
 			ULOGE("gzerror: %s", msg);
 			ret = -EIO;
+		} else {
+			ret = 0;
 		}
+	} else {
+		ret = 0;
 	}
 
 out:
@@ -313,7 +317,10 @@ int puf_tar_extract_to_file(struct puf_tar *puf_tar,
 		    pathname[1] == '/')
 			pathname = &pathname[2];
 		if (strcmp(pathname, fname) == 0) {
-			ret = tar_extract_file(t, (char *)oname);
+			if (tar_extract_file(t, (char *)oname) < 0)
+				ret = -EIO;
+			else
+				ret = 0;
 			break;
 		}
 
