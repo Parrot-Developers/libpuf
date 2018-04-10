@@ -65,6 +65,7 @@ static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
 
 	gzf = gzdopen(fd, gzoflags);
 	if (!gzf) {
+		close(fd);
 		errno = ENOMEM;
 		return -1;
 	}
