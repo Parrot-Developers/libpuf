@@ -183,94 +183,113 @@ out:
 	return ret;
 }
 
-int puf_tar_get_file_size(struct puf_tar *puf_tar, const char *fname)
+struct get_file_size_ctx {
+	const char *fname;
+	size_t size;
+	int found;
+};
+
+static int get_file_size_begin_cb(const struct puf_walk_member *member,
+		void *userdata)
 {
-	int ret = -ENOENT;
-	TAR *t;
+	struct get_file_size_ctx *ctx = userdata;
 
-	if (!puf_tar || !fname)
-		return -EINVAL;
-
-	if (tar_open(&t, puf_tar->path, puf_tar->tartype, O_RDONLY, 0, 0) == -1)
-		return -EIO;
-
-	while (th_read(t) == 0) {
-		char *pathname = th_get_pathname(t);
-		/* strip the leading ./ in pathname if present */
-		if (strlen(pathname) > 2 &&
-		    pathname[0] == '.' &&
-		    pathname[1] == '/')
-			pathname = &pathname[2];
-		if (strcmp(pathname, fname) == 0) {
-			ret = th_get_size(t);
-			break;
-		}
-		if (TH_ISREG(t) && tar_skip_regfile(t) != 0) {
-			ret = -EIO;
-			break;
-		}
+	/* If this is the member we search, get info and stop enumeration */
+	if (strcmp(member->name, ctx->fname) == 0) {
+		ctx->size = member->size;
+		ctx->found = 1;
+		return 0;
 	}
 
-	tar_close(t);
-
-	return ret;
+	/* Continue enumeration */
+	return 1;
 }
+
+int puf_tar_get_file_size(struct puf_tar *puf_tar, const char *fname)
+{
+	int ret = 0;
+	struct get_file_size_ctx ctx = {
+		.fname = fname,
+		.size = 0,
+		.found = 0,
+	};
+	struct puf_walk_cbs cbs = {
+		.userdata = &ctx,
+		.member_begin = &get_file_size_begin_cb,
+		.member_data = NULL,
+		.member_end = NULL,
+	};
+
+	ret = puf_tar_walk(puf_tar, &cbs);
+
+	return ret < 0 ? ret : ctx.found ? (int)ctx.size : -ENOENT;
+}
+
+struct extract_to_buf_ctx {
+	const char *fname;
+	uint8_t *buf;
+	size_t len;
+	size_t off;
+	int found;
+};
+
+static int extract_to_buf_begin_cb(const struct puf_walk_member *member,
+				   void *userdata)
+{
+	/* Set flag if we found our member,
+	 * check if provided buffer is big enough */
+	struct extract_to_buf_ctx *ctx = userdata;
+	if (strcmp(member->name, ctx->fname) == 0) {
+		ctx->found = 1;
+		if (member->size > ctx->len)
+			return -EINVAL;
+	}
+	return 1;
+}
+
+static int extract_to_buf_data_cb(const struct puf_walk_member *member,
+				  const uint8_t *buf, size_t len,
+				  void *userdata)
+{
+	/* Copy data if we found our member */
+	struct extract_to_buf_ctx *ctx = userdata;
+	if (ctx->found && ctx->off + len <= ctx->len) {
+		memcpy(ctx->buf + ctx->off, buf, len);
+		ctx->off += len;
+	}
+	return 1;
+}
+
+static int extract_to_buf_end_cb(const struct puf_walk_member *member,
+				 void *userdata)
+{
+	/* Stop enumeration if we found our member */
+	struct extract_to_buf_ctx *ctx = userdata;
+	return !ctx->found;
+}
+
 
 int puf_tar_extract_to_buf(struct puf_tar *puf_tar, const char *fname,
 			   uint8_t *buf, size_t len)
 {
-	int ret = -ENOENT;
-	TAR *t;
+	int ret = 0;
+	struct extract_to_buf_ctx ctx = {
+		.fname = fname,
+		.buf = buf,
+		.len = len,
+		.off = 0,
+		.found = 0,
+	};
+	struct puf_walk_cbs cbs = {
+		.userdata = &ctx,
+		.member_begin = &extract_to_buf_begin_cb,
+		.member_data = &extract_to_buf_data_cb,
+		.member_end = &extract_to_buf_end_cb,
+	};
 
-	if (!puf_tar || !fname || !buf)
-		return -EINVAL;
+	ret = puf_tar_walk(puf_tar, &cbs);
 
-	if (tar_open(&t, puf_tar->path, puf_tar->tartype, O_RDONLY, 0, 0) == -1)
-		return -EIO;
-
-	while (th_read(t) == 0) {
-		char *pathname = th_get_pathname(t);
-		/* strip the leading ./ in pathname if present */
-		if (strlen(pathname) > 2 &&
-		    pathname[0] == '.' &&
-		    pathname[1] == '/')
-			pathname = &pathname[2];
-		if (strcmp(pathname, fname) == 0) {
-			size_t copied_size = 0;
-			size_t tar_size = th_get_size(t);
-			if (tar_size > len) {
-				ret = -EINVAL;
-				break;
-			}
-			while (copied_size < tar_size) {
-				size_t remaining = tar_size - copied_size;
-				uint8_t rbuf[T_BLOCKSIZE];
-				tar_block_read(t, rbuf);
-				if (remaining > T_BLOCKSIZE) {
-					memcpy(&buf[copied_size],
-					       rbuf,
-					       T_BLOCKSIZE);
-					copied_size += T_BLOCKSIZE;
-				} else {
-					memcpy(&buf[copied_size],
-					       rbuf,
-					       remaining);
-					copied_size += remaining;
-				}
-			}
-			ret = tar_size;
-			break;
-		}
-
-		if (TH_ISREG(t) && tar_skip_regfile(t) != 0) {
-			ret = -EIO;
-			break;
-		}
-	}
-
-	tar_close(t);
-
-	return ret;
+	return ret < 0 ? ret : ctx.found ? 0 : -ENOENT;
 }
 
 int puf_tar_extract_to_file(struct puf_tar *puf_tar,
