@@ -31,6 +31,7 @@ ULOG_DECLARE_TAG(ULOG_TAG);
 #endif
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -195,17 +196,63 @@ int puf_walk(struct puf *puf, const struct puf_walk_cbs *cbs)
 }
 
 EXPORT_SYMBOL
+int puf_check_version(const struct puf_version *v)
+{
+	/* A NULL version is invalid */
+	if (!v)
+		return -EINVAL;
+
+	/* 0.0.0 versions should always be type DEV */
+	if (v->major == 0 && v->minor == 0 && v->patch == 0) {
+		if (v->type != PUF_VERSION_TYPE_DEV)
+			return -EINVAL;
+	}
+	/* DEV version should always be 0.0.0 */
+	if (v->type == PUF_VERSION_TYPE_DEV) {
+		if (v->major != 0 || v->minor != 0 || v->patch != 0)
+			return -EINVAL;
+	}
+
+	/* DEV / RELEASE version should have a zero build number */
+	if (v->type == PUF_VERSION_TYPE_DEV ||
+	    v->type == PUF_VERSION_TYPE_RELEASE) {
+		if (v->build != 0)
+			return -EINVAL;
+	} else {
+		/* others should not have build 0 */
+		if (v->build == 0)
+			return -EINVAL;
+	}
+
+	/* custom version shoud have a non-empty name and a non-zero number,
+	 * and has_custom should only be 0 or 1 */
+	if (v->has_custom) {
+		if (v->has_custom != 1)
+			return -EINVAL;
+		if (v->custom_name[0] == '\0')
+			return -EINVAL;
+		if (v->custom_number == 0)
+			return -EINVAL;
+	}
+
+	return 0;
+}
+
+EXPORT_SYMBOL
 int puf_compare_version(const struct puf_version *v1,
 			const struct puf_version *v2)
 {
-	/* both are NULL : same version */
-	if (!v1 && !v2)
+	int e1, e2;
+
+	e1 = puf_check_version(v1);
+	e2 = puf_check_version(v2);
+	/* Two invalid version compares as equals */
+	if (e1 && e2)
 		return 0;
-	/* v2 is not null, v1 is null : v2 newer */
-	if (v2 && !v1)
+	/* Any "valid" version is newer than an invalid version */
+	if (e1 && !e2)
 		return -1;
-	/* v1 is not null, v2 is null : v1 newer */
-	if (v1 && !v2)
+	if (!e1 && e2)
 		return 1;
 
 	/* compare, in order, major, minor, patch, type, build */
@@ -220,6 +267,12 @@ int puf_compare_version(const struct puf_version *v1,
 		return (v1->type > v2->type) ? 1 : -1;
 	if (v1->build != v2->build)
 		return (v1->build > v2->build) ? 1 : -1;
+
+	/* if still the same version, a custom one is
+	 * newer than a non-custom one */
+	if (v1->has_custom != v2->has_custom)
+		return v1->has_custom - v2->has_custom;
+
 	return 0;
 }
 
@@ -231,12 +284,15 @@ int puf_version_tostring(const struct puf_version *version,
 	int p_len;
 	if (!version || !buf)
 		return -EINVAL;
+	p_len = puf_check_version(version);
+	if (p_len < 0)
+		return p_len;
 
 	switch (version->type) {
 	case PUF_VERSION_TYPE_DEV:
 		p_len = snprintf(buf,
 				 len,
-				 "%u.%u.%u",
+				 "%" PRIu32 ".%" PRIu32 ".%" PRIu32,
 				 version->major,
 				 version->minor,
 				 version->patch);
@@ -244,7 +300,8 @@ int puf_version_tostring(const struct puf_version *version,
 	case PUF_VERSION_TYPE_ALPHA:
 		p_len = snprintf(buf,
 				 len,
-				 "%u.%u.%u-alpha%u",
+				 "%" PRIu32 ".%" PRIu32 ".%" PRIu32
+				 "-alpha%" PRIu32,
 				 version->major,
 				 version->minor,
 				 version->patch,
@@ -253,7 +310,8 @@ int puf_version_tostring(const struct puf_version *version,
 	case PUF_VERSION_TYPE_BETA:
 		p_len = snprintf(buf,
 				 len,
-				 "%u.%u.%u-beta%u",
+				 "%" PRIu32 ".%" PRIu32 ".%" PRIu32
+				 "-beta%" PRIu32,
 				 version->major,
 				 version->minor,
 				 version->patch,
@@ -262,7 +320,8 @@ int puf_version_tostring(const struct puf_version *version,
 	case PUF_VERSION_TYPE_RC:
 		p_len = snprintf(buf,
 				 len,
-				 "%u.%u.%u-rc%u",
+				 "%" PRIu32 ".%" PRIu32 ".%" PRIu32
+				 "-rc%" PRIu32,
 				 version->major,
 				 version->minor,
 				 version->patch,
@@ -271,7 +330,7 @@ int puf_version_tostring(const struct puf_version *version,
 	case PUF_VERSION_TYPE_RELEASE:
 		p_len = snprintf(buf,
 				 len,
-				 "%u.%u.%u",
+				 "%" PRIu32 ".%" PRIu32 ".%" PRIu32,
 				 version->major,
 				 version->minor,
 				 version->patch);
@@ -282,6 +341,20 @@ int puf_version_tostring(const struct puf_version *version,
 
 	if (p_len >= (int)len)
 		return -EINVAL;
+
+	/* Append custom */
+	if (version->has_custom) {
+		buf += p_len;
+		len -= p_len;
+		p_len = snprintf(buf,
+				 len,
+				 "+%s%" PRIu32,
+				 version->custom_name,
+				 version->custom_number);
+		if (p_len >= (int)len)
+			return -EINVAL;
+	}
+
 	return 0;
 }
 
@@ -289,7 +362,7 @@ EXPORT_SYMBOL
 int puf_version_fromstring(const char *version_str, struct puf_version *version)
 {
 	char buf[256];
-	size_t i;
+	char *custom;
 	int ret;
 
 	if (!version || !version_str)
@@ -297,74 +370,97 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 
 	memset(version, 0, sizeof(*version));
 
-	/* lower string */
+	/* copy string in buffer */
 	memset(buf, 0, sizeof(buf));
-	for (i = 0; (version_str[i] != '\0') && (i < sizeof(buf) - 1); i++)
-		buf[i] = tolower(version_str[i]);
+	strncpy(buf, version_str, sizeof(buf) - 1);
+
+	/* parse the custom part first, if present */
+	custom = strchr(buf, '+');
+	if (custom) {
+		/* change the + into a null, so the standard version parsing
+		 * can be used below */
+		*custom = '\0';
+
+		custom++;
+		version->has_custom = 1;
+		ret = sscanf(custom,
+			     "%32[a-z_-]%" SCNu32,
+			     version->custom_name,
+			     &version->custom_number);
+		if (ret != 2) {
+			/* if the custom part can not be parsed properly,
+			 * stop the parsing here and return an error */
+			return -EINVAL;
+		}
+	}
 
 	/* try alpha format */
 	ret = sscanf(buf,
-		     "%u.%u.%u-alpha%u",
+		     "%" SCNu32 ".%" SCNu32 ".%" SCNu32 "-alpha%" SCNu32,
 		     &version->major,
 		     &version->minor,
 		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_ALPHA;
-		return 0;
+		goto check;
 	}
 
 	/* try beta format */
 	ret = sscanf(buf,
-		     "%u.%u.%u-beta%u",
+		     "%" SCNu32 ".%" SCNu32 ".%" SCNu32 "-beta%" SCNu32,
 		     &version->major,
 		     &version->minor,
 		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_BETA;
-		return 0;
+		goto check;
 	}
 
 	/* try rc format */
 	ret = sscanf(buf,
-		     "%u.%u.%u-rc%u",
+		     "%" SCNu32 ".%" SCNu32 ".%" SCNu32 "-rc%" SCNu32,
 		     &version->major,
 		     &version->minor,
 		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_RC;
-		return 0;
+		goto check;
 	}
 
 	/* try production format */
 	ret = sscanf(buf,
-		     "%u.%u.%u",
+		     "%" SCNu32 ".%" SCNu32 ".%" SCNu32,
 		     &version->major,
 		     &version->minor,
 		     &version->patch);
 	if (ret == 3) {
-		/* check no other suffix */
-		snprintf(buf,
-			 sizeof(buf),
-			 "%u.%u.%u",
-			 version->major,
-			 version->minor,
-			 version->patch);
-		if (strncmp(buf, version_str, sizeof(buf)) == 0) {
-			if (version->major == 0 && version->minor == 0 &&
-			    version->patch == 0)
-				version->type = PUF_VERSION_TYPE_DEV;
-			else
-				version->type = PUF_VERSION_TYPE_RELEASE;
+		if (version->major == 0 && version->minor == 0 &&
+		    version->patch == 0) {
+			version->type = PUF_VERSION_TYPE_DEV;
 			version->build = 0;
-			return 0;
+			goto check;
 		}
+		version->type = PUF_VERSION_TYPE_RELEASE;
+		version->build = 0;
+		goto check;
 	}
 
-	/* strange version : fallback to alpha version */
-	version->type = PUF_VERSION_TYPE_ALPHA;
+	/* strange version : mark as invalid */
+	version->type = PUF_VERSION_TYPE_DEV;
 	version->build = 1;
-	return 0;
+
+check:
+	/* for non-dev versions, check that len(version_str) is the same as
+	 * len(puf_version_tostring(version)) */
+	if (version->type != PUF_VERSION_TYPE_DEV) {
+		ret = puf_version_tostring(version, buf, sizeof(buf));
+		if (ret != 0)
+			return ret;
+		if (strlen(buf) != strlen(version_str))
+			return -EINVAL;
+	}
+	return puf_check_version(version);
 }

@@ -71,9 +71,36 @@ static int puf_fill_version_from_header(plf_phdr *header,
 	case 'R':
 		version->type = PUF_VERSION_TYPE_RC;
 		break;
-	default:
+	case '\0':
 		version->type = PUF_VERSION_TYPE_RELEASE;
 		break;
+	case 'a':
+		version->type = PUF_VERSION_TYPE_ALPHA;
+		version->has_custom = 1;
+		break;
+	case 'b':
+		version->type = PUF_VERSION_TYPE_BETA;
+		version->has_custom = 1;
+		break;
+	case 'r':
+		version->type = PUF_VERSION_TYPE_RC;
+		version->has_custom = 1;
+		break;
+	case ' ':
+		version->type = PUF_VERSION_TYPE_RELEASE;
+		version->has_custom = 1;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (version->has_custom) {
+		/* As we can not read those infos from the archive, use the
+		 * "+unknown1" suffix to generate a valid custom version */
+		snprintf(version->custom_name,
+			 sizeof(version->custom_name),
+			 "unknown");
+		version->custom_number = 1;
 	}
 	return 0;
 }

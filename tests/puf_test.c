@@ -27,8 +27,10 @@
 #include <tests/puf_test.h>
 
 extern CU_TestInfo g_puf_test_tar[];
+extern CU_TestInfo g_puf_test_version[];
 
 static CU_SuiteInfo s_suites[] = {
+	{(char *)"version", NULL, NULL, g_puf_test_version},
 	{(char *)"api", NULL, NULL, g_puf_test_tar},
 	CU_SUITE_INFO_NULL,
 };

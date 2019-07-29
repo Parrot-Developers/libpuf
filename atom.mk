@@ -27,7 +27,8 @@ LOCAL_LIBRARIES := libcunit libpuf
 
 LOCAL_SRC_FILES := \
 	tests/puf_test.c \
-	tests/puf_test_tar.c
+	tests/puf_test_tar.c \
+	tests/puf_test_version.c
 
 LOCAL_COPY_FILES := \
 	tests/tar/archive1.tar:$(TARGET_DEFAULT_BIN_DESTDIR)/ \

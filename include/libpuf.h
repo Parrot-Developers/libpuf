@@ -52,6 +52,9 @@ struct puf_version {
 	uint32_t patch;
 	enum puf_version_type type;
 	uint32_t build; /* Always 0 if type is DEV or RELEASE */
+	int has_custom; /* 1 if the version has a custom part, 0 otherwise */
+	char custom_name[33]; /* custom feature name */
+	uint32_t custom_number; /* custom feature number (non-zero) */
 };
 
 struct puf_walk_member {
@@ -189,6 +192,13 @@ int puf_extract_to_file(struct puf *puf, const char *fname, const char *oname);
  * @return       0 if successful, -errno if an error occurred
  */
 int puf_walk(struct puf *puf, const struct puf_walk_cbs *cbs);
+
+/**
+ * Check if a puf_version represent a valid version.
+ * @param v: version to check
+ * @return 0 if the version is valid, -EINVAL otherwise
+ */
+int puf_check_version(const struct puf_version *v);
 
 /**
  * Compare two puf_versions
