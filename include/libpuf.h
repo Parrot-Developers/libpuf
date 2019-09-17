@@ -1,34 +1,34 @@
 /**
-* Copyright (c) 2017 Parrot Drones SAS
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the
-*     documentation and/or other materials provided with the distribution.
-*   * Neither the name of the Parrot Drones SAS Company nor the
-*     names of its contributors may be used to endorse or promote products
-*     derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2017 Parrot Drones SAS
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the Parrot Drones SAS Company nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #ifndef _LIBPUF_H
 #define _LIBPUF_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,9 +56,8 @@ struct puf_version {
 
 struct puf_walk_member {
 	const char *name; /* Name of member */
-	size_t size;    /* Size for regular files */
+	size_t size; /* Size for regular files */
 	uint32_t mode; /* File type and mode */
-
 };
 
 /** puf_walk callbaks. They are all optional */
@@ -71,23 +70,22 @@ struct puf_walk_cbs {
 	 * @return 1 to continue, 0 to stop, negative errno for error.
 	 */
 	int (*member_begin)(const struct puf_walk_member *member,
-			void *userdata);
+			    void *userdata);
 
 	/**
 	 * Data of member can be called several times.
 	 * @return 1 to continue, 0 to stop, negative errno for error.
 	 */
 	int (*member_data)(const struct puf_walk_member *member,
-			const uint8_t *buf,
-			size_t len,
-			void *userdata);
+			   const uint8_t *buf,
+			   size_t len,
+			   void *userdata);
 
 	/**
 	 * End of member.
 	 * @return 1 to continue, 0 to stop, negative errno for error.
 	 */
-	int (*member_end)(const struct puf_walk_member *member,
-			void *userdata);
+	int (*member_end)(const struct puf_walk_member *member, void *userdata);
 };
 
 /**
@@ -168,8 +166,10 @@ int puf_check(struct puf *puf);
  * @param len:   size of the buffer
  * @return       file size if successful, -errno if an error occurred
  */
-int puf_extract_to_buf(struct puf *puf, const char *fname,
-		       uint8_t *buf, size_t len);
+int puf_extract_to_buf(struct puf *puf,
+		       const char *fname,
+		       uint8_t *buf,
+		       size_t len);
 
 /**
  * Extract a file from the puf context to a file on mass storage
@@ -209,7 +209,8 @@ int puf_compare_version(const struct puf_version *v1,
  * @return         0 if successful, -errno if an error occurred
  */
 int puf_version_tostring(const struct puf_version *version,
-			 char *buf, size_t len);
+			 char *buf,
+			 size_t len);
 
 /**
  * Convert a string to a puf_version
@@ -220,7 +221,6 @@ int puf_version_tostring(const struct puf_version *version,
  */
 int puf_version_fromstring(const char *version_str,
 			   struct puf_version *version);
-
 
 
 #ifdef __cplusplus

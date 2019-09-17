@@ -1,36 +1,36 @@
 /**
-* Copyright (c) 2017 Parrot Drones SAS
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the
-*     documentation and/or other materials provided with the distribution.
-*   * Neither the name of the Parrot Drones SAS Company nor the
-*     names of its contributors may be used to endorse or promote products
-*     derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2017 Parrot Drones SAS
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the Parrot Drones SAS Company nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "libpuf_private.h"
 
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <zlib.h>
 
 
@@ -76,11 +76,10 @@ static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
 
 /* Can't be const because libtar expects a non-const tartype_t, but will not
    modify it */
-static tartype_t gztype = { (openfunc_t) gzopen_frontend,
-			    (closefunc_t) gzclose,
-			    (readfunc_t) gzread,
-			    (writefunc_t) gzwrite
-};
+static tartype_t gztype = {(openfunc_t)gzopen_frontend,
+			   (closefunc_t)gzclose,
+			   (readfunc_t)gzread,
+			   (writefunc_t)gzwrite};
 
 struct puf_tar *puf_tar_new(const char *path, int is_gzip)
 {
@@ -98,7 +97,8 @@ struct puf_tar *puf_tar_new(const char *path, int is_gzip)
 		goto error;
 	puf_tar->tartype = is_gzip ? &gztype : NULL;
 
-	res = puf_tar_extract_to_buf(puf_tar, TAR_HEADER_FILE,
+	res = puf_tar_extract_to_buf(puf_tar,
+				     TAR_HEADER_FILE,
 				     (uint8_t *)&puf_tar->header,
 				     sizeof(puf_tar->header));
 	if (res < 0)
@@ -125,9 +125,8 @@ int puf_tar_get_version(struct puf_tar *puf_tar, struct puf_version *version)
 	if (!puf_tar || !version)
 		return -EINVAL;
 
-	return puf_plf_get_version_from_buffer((uint8_t *)&puf_tar->header,
-					       sizeof(puf_tar->header),
-					       version);
+	return puf_plf_get_version_from_buffer(
+		(uint8_t *)&puf_tar->header, sizeof(puf_tar->header), version);
 }
 
 int puf_tar_get_app_id(struct puf_tar *puf_tar, uint32_t *app_id)
@@ -196,7 +195,7 @@ struct get_file_size_ctx {
 };
 
 static int get_file_size_begin_cb(const struct puf_walk_member *member,
-		void *userdata)
+				  void *userdata)
 {
 	struct get_file_size_ctx *ctx = userdata;
 
@@ -254,7 +253,8 @@ static int extract_to_buf_begin_cb(const struct puf_walk_member *member,
 }
 
 static int extract_to_buf_data_cb(const struct puf_walk_member *member,
-				  const uint8_t *buf, size_t len,
+				  const uint8_t *buf,
+				  size_t len,
 				  void *userdata)
 {
 	/* Copy data if we found our member */
@@ -275,8 +275,10 @@ static int extract_to_buf_end_cb(const struct puf_walk_member *member,
 }
 
 
-int puf_tar_extract_to_buf(struct puf_tar *puf_tar, const char *fname,
-			   uint8_t *buf, size_t len)
+int puf_tar_extract_to_buf(struct puf_tar *puf_tar,
+			   const char *fname,
+			   uint8_t *buf,
+			   size_t len)
 {
 	int ret = 0;
 	struct extract_to_buf_ctx ctx = {
@@ -299,7 +301,8 @@ int puf_tar_extract_to_buf(struct puf_tar *puf_tar, const char *fname,
 }
 
 int puf_tar_extract_to_file(struct puf_tar *puf_tar,
-			    const char *fname, const char *oname)
+			    const char *fname,
+			    const char *oname)
 {
 	int ret = -ENOENT;
 	TAR *t;
@@ -313,8 +316,7 @@ int puf_tar_extract_to_file(struct puf_tar *puf_tar,
 	while (th_read(t) == 0) {
 		char *pathname = th_get_pathname(t);
 		/* strip the leading ./ in pathname if present */
-		if (strlen(pathname) > 2 &&
-		    pathname[0] == '.' &&
+		if (strlen(pathname) > 2 && pathname[0] == '.' &&
 		    pathname[1] == '/')
 			pathname = &pathname[2];
 		if (strcmp(pathname, fname) == 0) {
@@ -377,9 +379,8 @@ int puf_tar_walk(struct puf_tar *puf_tar, const struct puf_walk_cbs *cbs)
 	while (th_read(t) == 0) {
 		char *pathname = th_get_pathname(t);
 		/* Strip the leading ./ in pathname if present */
-		if (strlen(pathname) > 2 &&
-				pathname[0] == '.' &&
-				pathname[1] == '/') {
+		if (strlen(pathname) > 2 && pathname[0] == '.' &&
+		    pathname[1] == '/') {
 			pathname = &pathname[2];
 		}
 

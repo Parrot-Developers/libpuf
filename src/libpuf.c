@@ -1,28 +1,28 @@
 /**
-* Copyright (c) 2017 Parrot Drones SAS
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the
-*     documentation and/or other materials provided with the distribution.
-*   * Neither the name of the Parrot Drones SAS Company nor the
-*     names of its contributors may be used to endorse or promote products
-*     derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2017 Parrot Drones SAS
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the Parrot Drones SAS Company nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "libpuf_private.h"
 
@@ -106,8 +106,7 @@ void puf_destroy(struct puf *puf)
 EXPORT_SYMBOL
 int puf_get_version(struct puf *puf, struct puf_version *version)
 {
-	if (!puf || !version ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !version || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_get_version(puf->plf, version);
@@ -118,8 +117,7 @@ int puf_get_version(struct puf *puf, struct puf_version *version)
 EXPORT_SYMBOL
 int puf_get_app_id(struct puf *puf, uint32_t *app_id)
 {
-	if (!puf || !app_id ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !app_id || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_get_app_id(puf->plf, app_id);
@@ -130,8 +128,7 @@ int puf_get_app_id(struct puf *puf, uint32_t *app_id)
 EXPORT_SYMBOL
 int puf_get_target_id(struct puf *puf, uint32_t *target_id)
 {
-	if (!puf || !target_id ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !target_id || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_get_target_id(puf->plf, target_id);
@@ -142,8 +139,7 @@ int puf_get_target_id(struct puf *puf, uint32_t *target_id)
 EXPORT_SYMBOL
 int puf_get_file_size(struct puf *puf, const char *fname)
 {
-	if (!puf || !fname ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !fname || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_get_file_size(puf->plf, fname);
@@ -163,11 +159,12 @@ int puf_check(struct puf *puf)
 }
 
 EXPORT_SYMBOL
-int puf_extract_to_buf(struct puf *puf, const char *fname,
-		       uint8_t *buf, size_t len)
+int puf_extract_to_buf(struct puf *puf,
+		       const char *fname,
+		       uint8_t *buf,
+		       size_t len)
 {
-	if (!puf || !fname || !buf ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !fname || !buf || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_extract_to_buf(puf->plf, fname, buf, len);
@@ -178,8 +175,7 @@ int puf_extract_to_buf(struct puf *puf, const char *fname,
 EXPORT_SYMBOL
 int puf_extract_to_file(struct puf *puf, const char *fname, const char *oname)
 {
-	if (!puf || !fname || !oname ||
-	    (!puf->plf && !puf->tar))
+	if (!puf || !fname || !oname || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	if (puf->plf)
 		return puf_plf_extract_to_file(puf->plf, fname, oname);
@@ -229,7 +225,8 @@ int puf_compare_version(const struct puf_version *v1,
 
 EXPORT_SYMBOL
 int puf_version_tostring(const struct puf_version *version,
-			 char *buf, size_t len)
+			 char *buf,
+			 size_t len)
 {
 	int p_len;
 	if (!version || !buf)
@@ -237,34 +234,44 @@ int puf_version_tostring(const struct puf_version *version,
 
 	switch (version->type) {
 	case PUF_VERSION_TYPE_DEV:
-		p_len = snprintf(buf, len, "%u.%u.%u",
+		p_len = snprintf(buf,
+				 len,
+				 "%u.%u.%u",
 				 version->major,
 				 version->minor,
 				 version->patch);
 		break;
 	case PUF_VERSION_TYPE_ALPHA:
-		p_len = snprintf(buf, len, "%u.%u.%u-alpha%u",
+		p_len = snprintf(buf,
+				 len,
+				 "%u.%u.%u-alpha%u",
 				 version->major,
 				 version->minor,
 				 version->patch,
 				 version->build);
 		break;
 	case PUF_VERSION_TYPE_BETA:
-		p_len = snprintf(buf, len, "%u.%u.%u-beta%u",
+		p_len = snprintf(buf,
+				 len,
+				 "%u.%u.%u-beta%u",
 				 version->major,
 				 version->minor,
 				 version->patch,
 				 version->build);
 		break;
 	case PUF_VERSION_TYPE_RC:
-		p_len = snprintf(buf, len, "%u.%u.%u-rc%u",
+		p_len = snprintf(buf,
+				 len,
+				 "%u.%u.%u-rc%u",
 				 version->major,
 				 version->minor,
 				 version->patch,
 				 version->build);
 		break;
 	case PUF_VERSION_TYPE_RELEASE:
-		p_len = snprintf(buf, len, "%u.%u.%u",
+		p_len = snprintf(buf,
+				 len,
+				 "%u.%u.%u",
 				 version->major,
 				 version->minor,
 				 version->patch);
@@ -296,8 +303,11 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 		buf[i] = tolower(version_str[i]);
 
 	/* try alpha format */
-	ret = sscanf(buf, "%u.%u.%u-alpha%u", &version->major,
-		     &version->minor, &version->patch,
+	ret = sscanf(buf,
+		     "%u.%u.%u-alpha%u",
+		     &version->major,
+		     &version->minor,
+		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_ALPHA;
@@ -305,8 +315,11 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 	}
 
 	/* try beta format */
-	ret = sscanf(buf, "%u.%u.%u-beta%u", &version->major,
-		     &version->minor, &version->patch,
+	ret = sscanf(buf,
+		     "%u.%u.%u-beta%u",
+		     &version->major,
+		     &version->minor,
+		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_BETA;
@@ -314,8 +327,11 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 	}
 
 	/* try rc format */
-	ret = sscanf(buf, "%u.%u.%u-rc%u", &version->major,
-		     &version->minor, &version->patch,
+	ret = sscanf(buf,
+		     "%u.%u.%u-rc%u",
+		     &version->major,
+		     &version->minor,
+		     &version->patch,
 		     &version->build);
 	if (ret == 4) {
 		version->type = PUF_VERSION_TYPE_RC;
@@ -323,15 +339,21 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 	}
 
 	/* try production format */
-	ret = sscanf(buf, "%u.%u.%u", &version->major, &version->minor,
+	ret = sscanf(buf,
+		     "%u.%u.%u",
+		     &version->major,
+		     &version->minor,
 		     &version->patch);
 	if (ret == 3) {
 		/* check no other suffix */
-		snprintf(buf, sizeof(buf), "%u.%u.%u", version->major,
-			 version->minor, version->patch);
+		snprintf(buf,
+			 sizeof(buf),
+			 "%u.%u.%u",
+			 version->major,
+			 version->minor,
+			 version->patch);
 		if (strncmp(buf, version_str, sizeof(buf)) == 0) {
-			if (version->major == 0 &&
-			    version->minor == 0 &&
+			if (version->major == 0 && version->minor == 0 &&
 			    version->patch == 0)
 				version->type = PUF_VERSION_TYPE_DEV;
 			else

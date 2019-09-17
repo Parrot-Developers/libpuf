@@ -1,28 +1,28 @@
 /**
-* Copyright (c) 2017 Parrot Drones SAS
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above copyright
-*     notice, this list of conditions and the following disclaimer in the
-*     documentation and/or other materials provided with the distribution.
-*   * Neither the name of the Parrot Drones SAS Company nor the
-*     names of its contributors may be used to endorse or promote products
-*     derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2017 Parrot Drones SAS
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the Parrot Drones SAS Company nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE PARROT DRONES SAS COMPANY BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "libpuf_private.h"
 
@@ -38,9 +38,8 @@ static int puf_get_type_version(uint32_t p_lang)
 	c1 = (p_lang >> 8);
 	c2 = (p_lang >> 16);
 
-	if (('0' <= c1) && (c1 <= '9') &&
-	    ('0' <= c2) && (c2 <= '9'))
-		return (c1-'0')*10 + (c2-'0');
+	if (('0' <= c1) && (c1 <= '9') && ('0' <= c2) && (c2 <= '9'))
+		return (c1 - '0') * 10 + (c2 - '0');
 	return 0;
 }
 
@@ -54,9 +53,7 @@ static int puf_fill_version_from_header(plf_phdr *header,
 	version->minor = header->p_edit;
 	version->patch = header->p_ext;
 
-	if (version->major == 0 &&
-	    version->minor == 0 &&
-	    version->patch == 0) {
+	if (version->major == 0 && version->minor == 0 && version->patch == 0) {
 		version->type = PUF_VERSION_TYPE_DEV;
 		version->build = 0;
 		return 0;
@@ -164,14 +161,17 @@ int puf_plf_get_file_size(struct puf_plf *puf_plf, const char *fname)
 	return -ENOSYS;
 }
 
-int puf_plf_extract_to_buf(struct puf_plf *puf_plf, const char *fname,
-			   uint8_t *buf, size_t len)
+int puf_plf_extract_to_buf(struct puf_plf *puf_plf,
+			   const char *fname,
+			   uint8_t *buf,
+			   size_t len)
 {
 	return -ENOSYS;
 }
 
 int puf_plf_extract_to_file(struct puf_plf *puf_plf,
-			    const char *fname, const char *oname)
+			    const char *fname,
+			    const char *oname)
 {
 	int ret = 0, i, count, pos = -1;
 	plf_unixhdr hdr;
@@ -185,8 +185,8 @@ int puf_plf_extract_to_file(struct puf_plf *puf_plf,
 
 	for (i = 0; i < count; i++) {
 		/* probe section */
-		ret = plfng_get_unixfile_path(puf_plf->plf, i, &hdr, buf,
-					      sizeof(buf));
+		ret = plfng_get_unixfile_path(
+			puf_plf->plf, i, &hdr, buf, sizeof(buf));
 		if ((ret < 0) || !S_ISREG((mode_t)hdr.s_mode))
 			/* probably not a U_UNIXFILE regular file */
 			continue;
@@ -286,14 +286,17 @@ int puf_plf_get_file_size(struct puf_plf *puf_plf, const char *fname)
 	return -ENOSYS;
 }
 
-int puf_plf_extract_to_buf(struct puf_plf *puf_plf, const char *fname,
-			   uint8_t *buf, size_t len)
+int puf_plf_extract_to_buf(struct puf_plf *puf_plf,
+			   const char *fname,
+			   uint8_t *buf,
+			   size_t len)
 {
 	return -ENOSYS;
 }
 
 int puf_plf_extract_to_file(struct puf_plf *puf_plf,
-			    const char *fname, const char *oname)
+			    const char *fname,
+			    const char *oname)
 {
 	return -ENOSYS;
 }
@@ -305,7 +308,8 @@ int puf_plf_walk(struct puf_plf *puf_plf, const struct puf_walk_cbs *cbs)
 
 #endif
 
-int puf_plf_get_version_from_buffer(uint8_t *buffer, size_t len,
+int puf_plf_get_version_from_buffer(uint8_t *buffer,
+				    size_t len,
 				    struct puf_version *version)
 {
 	plf_phdr *header;
