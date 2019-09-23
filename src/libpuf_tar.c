@@ -74,12 +74,27 @@ static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
 	return (intptr_t)gzf;
 }
 
+static int gzclose_frontend(intptr_t fd)
+{
+	return gzclose((gzFile)fd);
+}
+
+static ssize_t gzread_frontend(intptr_t fd, void *ptr, size_t len)
+{
+	return gzread((gzFile)fd, ptr, len);
+}
+
+static ssize_t gzwrite_frontend(intptr_t fd, const void *ptr, size_t len)
+{
+	return gzwrite((gzFile)fd, ptr, len);
+}
+
 /* Can't be const because libtar expects a non-const tartype_t, but will not
    modify it */
 static tartype_t gztype = {(openfunc_t)gzopen_frontend,
-			   (closefunc_t)gzclose,
-			   (readfunc_t)gzread,
-			   (writefunc_t)gzwrite};
+			   gzclose_frontend,
+			   gzread_frontend,
+			   gzwrite_frontend};
 
 struct puf_tar *puf_tar_new(const char *path, int is_gzip)
 {
