@@ -44,8 +44,8 @@ static const struct puf_version g_zero_custom_version = {
 	.type = PUF_VERSION_TYPE_DEV,
 	.build = 0,
 	.has_custom = 1,
-	.custom_name = "unknown",
-	.custom_number = 1,
+	.custom_name = "custom",
+	.custom_number = 2,
 };
 
 static void test_tar_load(void)

@@ -38,7 +38,9 @@
 
 
 #define ULOG_TAG libpuf
-
+#define MAX_BUILD_PROP_SIZE (4 * 1024)
+#define PROP_SOURCE_PATH "etc/build.prop"
+#define PROP_BUILD_VERSION "ro.parrot.build.version="
 #if defined(BUILD_LIBULOG)
 
 #	include <ulog.h>

@@ -6,7 +6,7 @@ LOCAL_MODULE := libpuf
 LOCAL_CATEGORY_PATH := libs
 LOCAL_DESCRIPTION := Helper library for accessing parrot firmware files
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
-LOCAL_CFLAGS := -fvisibility=hidden
+LOCAL_CFLAGS := -fvisibility=hidden -std=gnu99
 LOCAL_SRC_FILES := src/libpuf.c \
 	src/libpuf_plf.c \
 	src/libpuf_tar.c
@@ -24,7 +24,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := tst-libpuf
 LOCAL_LIBRARIES := libcunit libpuf
-
+LOCAL_CFLAGS := -std=gnu99
 LOCAL_SRC_FILES := \
 	tests/puf_test.c \
 	tests/puf_test_tar.c \

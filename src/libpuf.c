@@ -107,13 +107,32 @@ void puf_destroy(struct puf *puf)
 EXPORT_SYMBOL
 int puf_get_version(struct puf *puf, struct puf_version *version)
 {
+	int ret;
+	int ret_tmp;
+	struct puf_version version_tmp;
+
 	if (!puf || !version || (!puf->plf && !puf->tar))
 		return -EINVAL;
 	memset(version, 0, sizeof(*version));
-	if (puf->plf)
-		return puf_plf_get_version(puf->plf, version);
-	else
-		return puf_tar_get_version(puf->tar, version);
+	if (puf->plf) {
+		ret = puf_plf_get_version(puf->plf, version);
+	} else {
+		ret = puf_tar_get_version_from_plf(puf->tar, version);
+		if (ret == 0 && version->has_custom) {
+			/* Get remote custom name from build.propp file */
+			ret_tmp = puf_tar_get_version_from_prop(puf->tar,
+								&version_tmp);
+			if (ret_tmp != 0)
+				goto end;
+			if (puf_compare_version(&version_tmp, version) != 0)
+				goto end;
+			strcpy(version->custom_name, version_tmp.custom_name);
+			version->custom_number = version_tmp.custom_number;
+		}
+	}
+
+end:
+	return ret;
 }
 
 EXPORT_SYMBOL
@@ -378,7 +397,7 @@ int puf_version_fromstring(const char *version_str, struct puf_version *version)
 	/* parse the custom part first, if present */
 	custom = strchr(buf, '+');
 	if (custom) {
-		/* change the + into a null, so the standard version parsing
+		/* change the '+' into a null, so the standard version parsing
 		 * can be used below */
 		*custom = '\0';
 

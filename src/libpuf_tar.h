@@ -39,7 +39,10 @@ struct puf_tar {
 
 struct puf_tar *puf_tar_new(const char *path, int is_gzip);
 void puf_tar_destroy(struct puf_tar *fw_tar);
-int puf_tar_get_version(struct puf_tar *fw_tar, struct puf_version *version);
+int puf_tar_get_version_from_plf(struct puf_tar *fw_tar,
+				 struct puf_version *version);
+int puf_tar_get_version_from_prop(struct puf_tar *puf_tar,
+				  struct puf_version *version);
 int puf_tar_get_app_id(struct puf_tar *fw_tar, uint32_t *app_id);
 int puf_tar_get_target_id(struct puf_tar *fw_tar, uint32_t *target_id);
 int puf_tar_check(struct puf_tar *fw_tar);

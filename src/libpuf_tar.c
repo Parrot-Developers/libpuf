@@ -135,7 +135,8 @@ void puf_tar_destroy(struct puf_tar *puf_tar)
 	free(puf_tar);
 }
 
-int puf_tar_get_version(struct puf_tar *puf_tar, struct puf_version *version)
+int puf_tar_get_version_from_plf(struct puf_tar *puf_tar,
+				 struct puf_version *version)
 {
 	if (!puf_tar || !version)
 		return -EINVAL;
@@ -143,6 +144,45 @@ int puf_tar_get_version(struct puf_tar *puf_tar, struct puf_version *version)
 	return puf_plf_get_version_from_buffer(
 		(uint8_t *)&puf_tar->header, sizeof(puf_tar->header), version);
 }
+
+int puf_tar_get_version_from_prop(struct puf_tar *puf_tar,
+				  struct puf_version *version)
+{
+	int ret = -EINVAL;
+	char *prop;
+	char *eol; /* string to contain build version property */
+	uint8_t *buf; /* buffer to hold build.prop content */
+
+	if (!puf_tar || !version)
+		return -EINVAL;
+	buf = calloc(MAX_BUILD_PROP_SIZE, sizeof(uint8_t));
+	if (buf == NULL)
+		goto end;
+
+	ret = puf_tar_extract_to_buf(
+		puf_tar, PROP_SOURCE_PATH, buf, MAX_BUILD_PROP_SIZE);
+	if (ret < 0)
+		goto end;
+
+	/* Get version name string */
+	prop = strstr((const char *)buf, PROP_BUILD_VERSION);
+	if (prop == NULL)
+		goto end;
+	prop = prop + strlen(PROP_BUILD_VERSION);
+
+	eol = strchr(prop, '\n');
+	if (eol == NULL)
+		goto end;
+	*eol = '\0';
+	ret = puf_version_fromstring(prop, version);
+	if (ret != 0)
+		goto end;
+
+end:
+	free(buf);
+	return ret;
+}
+
 
 int puf_tar_get_app_id(struct puf_tar *puf_tar, uint32_t *app_id)
 {

@@ -195,6 +195,7 @@ static void test_version_compare(void)
 	check_compare_str("1.2.3", SAME, "1.2.3");
 
 	/* Change major */
+	check_compare_str("2.2.3", NEWER, "0.0.0");
 	check_compare_str("2.2.3", NEWER, "1.2.3");
 	check_compare_str("2.2.3-alpha1", NEWER, "1.2.3");
 	check_compare_str("2.2.3", NEWER, "1.2.3-rc3");
