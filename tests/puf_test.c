@@ -59,8 +59,11 @@ void puf_test_check_header(struct puf *puf,
 {
 	int ret = 0;
 	uint32_t _target_id = 0, _app_id = 0;
+
 	struct puf_version _version;
-	memset(&_version, 0, sizeof(_version));
+	/* Initialize _version with bad values */
+	memset(&_version, 0xff, sizeof(_version));
+
 
 	ret = puf_get_target_id(puf, &_target_id);
 	CU_ASSERT_EQUAL(ret, 0);
@@ -76,6 +79,9 @@ void puf_test_check_header(struct puf *puf,
 	CU_ASSERT_EQUAL(_version.patch, version->patch);
 	CU_ASSERT_EQUAL(_version.type, version->type);
 	CU_ASSERT_EQUAL(_version.build, version->build);
+	CU_ASSERT_EQUAL(_version.has_custom, version->has_custom);
+	CU_ASSERT_STRING_EQUAL(_version.custom_name, version->custom_name);
+	CU_ASSERT_EQUAL(_version.custom_number, version->custom_number);
 }
 
 void puf_test_check_extract(const char *filepath)

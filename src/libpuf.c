@@ -109,6 +109,7 @@ int puf_get_version(struct puf *puf, struct puf_version *version)
 {
 	if (!puf || !version || (!puf->plf && !puf->tar))
 		return -EINVAL;
+	memset(version, 0, sizeof(*version));
 	if (puf->plf)
 		return puf_plf_get_version(puf->plf, version);
 	else
