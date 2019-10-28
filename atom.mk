@@ -38,6 +38,7 @@ LOCAL_COPY_FILES := \
 	tests/tar/archive3.tar.bz2:$(TARGET_DEFAULT_BIN_DESTDIR)/ \
 	tests/tar/empty.tar:$(TARGET_DEFAULT_BIN_DESTDIR)/ \
 	tests/tar/empty.tar.gz:$(TARGET_DEFAULT_BIN_DESTDIR)/ \
+	tests/tar/archive_custom.tar.gz:$(TARGET_DEFAULT_BIN_DESTDIR)/ \
 
 include $(BUILD_EXECUTABLE)
 

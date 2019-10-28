@@ -53,12 +53,6 @@ static int puf_fill_version_from_header(plf_phdr *header,
 	version->minor = header->p_edit;
 	version->patch = header->p_ext;
 
-	if (version->major == 0 && version->minor == 0 && version->patch == 0) {
-		version->type = PUF_VERSION_TYPE_DEV;
-		version->build = 0;
-		return 0;
-	}
-
 	version->build = puf_get_type_version(header->p_lang);
 
 	switch (header->p_lang & 0xff) {
@@ -102,6 +96,12 @@ static int puf_fill_version_from_header(plf_phdr *header,
 			 "unknown");
 		version->custom_number = 1;
 	}
+
+	/* For 0.0.0 versions, change TYPE_RELEASE to TYPE_DEV */
+	if (version->major == 0 && version->minor == 0 && version->patch == 0 &&
+	    version->type == PUF_VERSION_TYPE_RELEASE)
+		version->type = PUF_VERSION_TYPE_DEV;
+
 	return 0;
 }
 

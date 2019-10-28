@@ -37,6 +37,17 @@ static const struct puf_version g_version = {
 	.build = 1,
 };
 
+static const struct puf_version g_zero_custom_version = {
+	.major = 0,
+	.minor = 0,
+	.patch = 0,
+	.type = PUF_VERSION_TYPE_DEV,
+	.build = 0,
+	.has_custom = 1,
+	.custom_name = "unknown",
+	.custom_number = 1,
+};
+
 static void test_tar_load(void)
 {
 	int ret = 0;
@@ -89,6 +100,14 @@ static void test_tar_load(void)
 	CU_ASSERT_PTR_NULL(puf);
 	puf = puf_new(puf_test_get_fullpath("empty.tar.gz"));
 	CU_ASSERT_PTR_NULL(puf);
+
+	/* Normal 0.0.0 archive with custom part */
+	puf = puf_new(puf_test_get_fullpath("archive_custom.tar.gz"));
+	CU_ASSERT_PTR_NOT_NULL_FATAL(puf);
+	puf_test_check_header(puf, TARGET_ID, APP_ID, &g_zero_custom_version);
+	ret = puf_check(puf);
+	CU_ASSERT_EQUAL(ret, 0);
+	puf_destroy(puf);
 
 	puf = puf_new(NULL);
 	CU_ASSERT_PTR_NULL(puf);
