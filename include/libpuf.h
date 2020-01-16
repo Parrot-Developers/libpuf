@@ -167,7 +167,7 @@ int puf_check(struct puf *puf);
  * @param fname: file name to extract
  * @param buf:   buffer for the file contents
  * @param len:   size of the buffer
- * @return       file size if successful, -errno if an error occurred
+ * @return       0 if successful, -errno if an error occurred
  */
 int puf_extract_to_buf(struct puf *puf,
 		       const char *fname,
