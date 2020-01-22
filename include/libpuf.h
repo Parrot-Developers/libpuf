@@ -189,7 +189,10 @@ int puf_extract_to_file(struct puf *puf, const char *fname, const char *oname);
  *
  * @param puf:   puf context
  * @param cbs:   structure with functions to be called for each member.
- * @return       0 if successful, -errno if an error occurred
+ * @return       >= 0 if successful, -errno if an error occurred
+ *               The returned value is either a negative errno from libpuf
+ *               itself, or the last value returned from one of the callback
+ *               functions in cbs.
  */
 int puf_walk(struct puf *puf, const struct puf_walk_cbs *cbs);
 
