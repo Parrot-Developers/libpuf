@@ -36,11 +36,35 @@
 
 #define TAR_HEADER_FILE "header"
 
-static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
+#define MAX_OPEN_GZ_FILES 10
+#define DELTA_GZ_FILE_DESCRIPTOR 100
+static gzFile gz_files[MAX_OPEN_GZ_FILES] = {NULL};
+#define GZ_FD_OK(fd)                                                           \
+	((fd) >= DELTA_GZ_FILE_DESCRIPTOR &&                                   \
+	 (fd) < DELTA_GZ_FILE_DESCRIPTOR + MAX_OPEN_GZ_FILES &&                \
+	 gz_files[(fd)-DELTA_GZ_FILE_DESCRIPTOR])
+
+
+static int gzopen_frontend(char *pathname, int oflags, int mode)
 {
 	const char *gzoflags;
 	gzFile gzf;
 	int fd;
+
+	int curFile;
+	for (curFile = 0; curFile < MAX_OPEN_GZ_FILES; ++curFile)
+	{
+		if (!gz_files[curFile])
+		{
+			break;
+		}
+	}
+	if (curFile >= MAX_OPEN_GZ_FILES)
+	{
+		ULOGE("Too many gzip files open");
+		errno = ENOMEM;
+		return -1;
+	}
 
 	switch (oflags & O_ACCMODE) {
 	case O_WRONLY:
@@ -71,22 +95,44 @@ static intptr_t gzopen_frontend(char *pathname, int oflags, int mode)
 		return -1;
 	}
 
-	return (intptr_t)gzf;
+	gz_files[curFile] = gzf;
+
+	return curFile + DELTA_GZ_FILE_DESCRIPTOR;
 }
 
-static int gzclose_frontend(intptr_t fd)
+static int gzclose_frontend(int fd)
 {
-	return gzclose((gzFile)fd);
+	if (!GZ_FD_OK(fd))
+	{
+		ULOGE("gzclose on unknown file");
+		errno = EINVAL;
+		return -1;
+	}
+	const int ret = gzclose(gz_files[fd - DELTA_GZ_FILE_DESCRIPTOR]);
+	gz_files[fd - DELTA_GZ_FILE_DESCRIPTOR] = NULL;
+	return ret;
 }
 
-static ssize_t gzread_frontend(intptr_t fd, void *ptr, size_t len)
+static ssize_t gzread_frontend(int fd, void *ptr, size_t len)
 {
-	return gzread((gzFile)fd, ptr, len);
+	if (!GZ_FD_OK(fd))
+	{
+		ULOGE("gzread on unknown file");
+		errno = EINVAL;
+		return -1;
+	}
+	return gzread(gz_files[fd - DELTA_GZ_FILE_DESCRIPTOR], ptr, len);
 }
 
-static ssize_t gzwrite_frontend(intptr_t fd, const void *ptr, size_t len)
+static ssize_t gzwrite_frontend(int fd, const void *ptr, size_t len)
 {
-	return gzwrite((gzFile)fd, ptr, len);
+	if (!GZ_FD_OK(fd))
+	{
+		ULOGE("gzwrite on unknown file");
+		errno = EINVAL;
+		return -1;
+	}
+	return gzwrite(gz_files[fd - DELTA_GZ_FILE_DESCRIPTOR], ptr, len);
 }
 
 /* Can't be const because libtar expects a non-const tartype_t, but will not
@@ -227,7 +273,11 @@ int puf_tar_check(struct puf_tar *puf_tar)
 		ret = -EIO;
 	} else if (puf_tar->tartype == &gztype) {
 		/* Check gzip error, to detect early EOF */
-		msg = gzerror((gzFile)t->fd, &ret);
+		if (GZ_FD_OK(t->fd)) {
+			msg = gzerror(
+				gz_files[t->fd - DELTA_GZ_FILE_DESCRIPTOR],
+				&ret);
+		}
 		if (ret != Z_OK) {
 			ULOGE("gzerror: %s", msg);
 			ret = -EIO;
